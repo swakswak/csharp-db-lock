@@ -3,11 +3,18 @@ using DatabaseLockSample.EFCore.Models;
 using DatabaseLockSample.EFCore.Services;
 using DatabaseLockSample.EFCore.Services.Optimistic;
 
-var appDbContext = new AppDbContext();
-IBookService optimisticLockBookService = new OptimisticLockBookService(appDbContext);
-var registered = optimisticLockBookService.Register(Book.Register("DDD", 1));
-Console.WriteLine($"registered.Version={registered.Version}");
-var ddd = optimisticLockBookService.Get("DDD");
-Console.WriteLine($"ddd.Version={ddd.Version}");
-var checkedOutBook = optimisticLockBookService.CheckOut(ddd);
-Console.WriteLine($"checkedOutBook.Version={checkedOutBook.Version}");
+var optimisticLockBookService = new OptimisticLockLibraryService();
+var registered = await optimisticLockBookService.RegisterAsync(Book.Register($"TEST-BOOK-{Guid.NewGuid().ToString().Split("-")[0]}", 1));
+Console.WriteLine($"registered=({registered})");
+
+var checkoutParam = await optimisticLockBookService.GetAsync(registered.Name);
+Console.WriteLine($"ddd=({checkoutParam})");
+
+var checkedOutBook = await optimisticLockBookService.CheckOutAsync(checkoutParam!);
+Console.WriteLine($"checkedOutBook=({checkedOutBook})");
+
+await optimisticLockBookService.ReturnAsync(checkedOutBook);
+
+var afterReturn = await optimisticLockBookService.GetAsync(registered.Name);
+
+Console.WriteLine($"registered=({registered}), afterRegister=({checkoutParam}), checkedOutBook=({checkedOutBook}), afterReturn={afterReturn}");

@@ -8,7 +8,7 @@ public class Book
 {
     protected Book() { }
 
-    private Book(long? id, string name, int stock, long version)
+    private Book(long? id, string name, int stock, int version)
     {
         Id = id;
         Name = name;
@@ -25,7 +25,13 @@ public class Book
 
     public int Stock { get; set; }
     
-    public long Version { get; set; }
+    [ConcurrencyCheck]
+    public int Version { get; set; }
 
     public static Book Register(string name, int stock) => new(null, name, stock, 0);
+
+    public override string ToString()
+    {
+        return $"{nameof(Name)}: {Name}, {nameof(Stock)}: {Stock}, {nameof(Version)}: {Version}";
+    }
 }
